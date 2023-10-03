@@ -82,6 +82,7 @@ def update_ev_range(car_id, vehicle):
     db_obj = database.EVRange(
         car_id=car_id,
         ev_range=int(vehicle.ev_driving_range),
+        air_temperature=vehicle.air_temperature,
         time=vehicle.last_updated_at,
     )
     database.db_session.add(db_obj)

@@ -61,6 +61,7 @@ class EVRange(Model):
     id = Column('id', postgresql.BIGINT, primary_key=True, nullable=False, unique=True)
     car_id = Column('car_id', Integer, ForeignKey('car.id'), nullable=False)
     ev_range = Column('range', Integer, nullable=False)
+    air_temperature = Column('air_temperature', Float, nullable=False)
     time = Column('time', DateTime(timezone=True), nullable=False)
 
     UniqueConstraint(car_id, time)
