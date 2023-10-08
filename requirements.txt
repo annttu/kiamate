@@ -1,3 +1,4 @@
 hyundai-kia-connect-api==3.9.0
 psycopg2-binary==2.9.8
 SQLAlchemy==2.0.21
+schedule==1.2.1
