@@ -100,19 +100,27 @@ def update_daily_stat(car_id, stat):
         database.DailyStats.car_id == car_id,
         database.DailyStats.time == stat.date)
     db_obj = q.first()
-    if db_obj:
-        return
-    db_obj = database.DailyStats(
-        car_id=car_id,
-        total_consumed=stat.total_consumed,
-        engine_consumption=stat.engine_consumption,
-        climate_consumption=stat.climate_consumption,
-        onboard_electronics_consumption=stat.onboard_electronics_consumption,
-        battery_care_consumption=stat.battery_care_consumption,
-        regenerated_energy=stat.regenerated_energy,
-        distance=stat.distance,
-        time=stat.date,
-    )
+    if not db_obj:
+
+        db_obj = database.DailyStats(
+            car_id=car_id,
+            total_consumed=stat.total_consumed,
+            engine_consumption=stat.engine_consumption,
+            climate_consumption=stat.climate_consumption,
+            onboard_electronics_consumption=stat.onboard_electronics_consumption,
+            battery_care_consumption=stat.battery_care_consumption,
+            regenerated_energy=stat.regenerated_energy,
+            distance=stat.distance,
+            time=stat.date,
+        )
+    else:
+        db_obj.total_consumed = stat.total_consumed
+        db_obj.engine_consumption = stat.engine_consumption
+        db_obj.climate_consumption = stat.climate_consumption
+        db_obj.onboard_electronics_consumption = stat.onboard_electronics_consumption
+        db_obj.battery_care_consumption = stat.battery_care_consumption
+        db_obj.regenerated_energy = stat.regenerated_energy
+        db_obj.distance = stat.distance
     database.db_session.add(db_obj)
 
 
