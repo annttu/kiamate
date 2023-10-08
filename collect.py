@@ -169,6 +169,7 @@ def main():
         time.sleep(int(start + 900 - time.time()))
 
         try:
+            vm.check_and_refresh_token()
             vm.check_and_force_update_vehicles(force_refresh_interval=60)
         except Exception:
             logger.exception("Failed to update vehicle states")
