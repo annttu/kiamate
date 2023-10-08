@@ -83,3 +83,18 @@ class DailyStats(Model):
     time = Column('time', DateTime(timezone=True), nullable=False)
 
     UniqueConstraint(car_id, time)
+
+
+class Trip(Model):
+    __tablename__ = 'trip'
+    id = Column('id', postgresql.BIGINT, primary_key=True, nullable=False, unique=True)
+    car_id = Column('car_id', Integer, ForeignKey('car.id'), nullable=False)
+    drive_time = Column('drive_time', Integer, nullable=False)
+    idle_time = Column('idle_time', Integer, nullable=False)
+    distance = Column('distance', Integer, nullable=False)
+    avg_speed = Column('avg_speed', Integer, nullable=False)
+    max_speed = Column('max_speed', Integer, nullable=False)
+    time = Column('time', DateTime(timezone=True), nullable=False)
+    day = Column('day', DateTime(timezone=True), nullable=False)
+
+    UniqueConstraint(car_id, time)

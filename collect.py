@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+from datetime import datetime
 
+import schedule
 from hyundai_kia_connect_api import *
 import time
 import pprint
@@ -124,18 +126,69 @@ def update_daily_stat(car_id, stat):
     database.db_session.add(db_obj)
 
 
+def update_daytrip_infos(vehicle_manager):
+    for vehicle_id, vehicle in vehicle_manager.vehicles.items():
+        try:
+            car_id = add_or_update_car(vehicle=vehicle)
+        except Exception:
+            logger.exception("Failed to store vehicle state")
+            continue
+        now = datetime.now()
+        start_of_day = datetime(year=now.year, month=now.month, day=now.day, hour=0, minute=0, second=0)
+        for stat in vehicle.daily_stats:
+            if stat.date < start_of_day:
+                try:
+                    update_daytrip_info(car_id, vehicle, vehicle_manager, stat.date)
+                except Exception:
+                    logger.exception("Failed to store daytrip info")
+                    database.db_session.rollback()
+                    break
+        database.db_session.commit()
+
+
+def update_daytrip_info(car_id, vehicle, vehicle_manager, day):
+    q = database.Trip.query.filter(
+        database.Trip.car_id == car_id,
+        database.Trip.day == day)
+    db_obj = q.first()
+    if db_obj:
+        return
+    # Get stats
+    vehicle_manager.update_day_trip_info(vehicle.id, day.strftime("%Y%m%d"))
+    for trip in vehicle.day_trip_info.trip_list:
+        timestamp = datetime.strptime(trip.hhmmss, "%H%M%S").replace(year=day.year, month=day.month, day=day.day)
+        db_obj = database.Trip(
+            car_id=car_id,
+            drive_time=trip.drive_time,
+            idle_time=trip.idle_time,
+            distance=trip.distance,
+            avg_speed=trip.avg_speed,
+            max_speed=trip.max_speed,
+            time=timestamp,
+            day=day,
+        )
+        database.db_session.add(db_obj)
+
+
 def main():
     database.init_db()
 
     vm = VehicleManager(region=1, brand=1, username=credentials.email, password=credentials.password,
                         pin=credentials.pin)
 
-    vm.check_and_refresh_token()
-
-    vm.update_all_vehicles_with_cached_state()
+    # Update previous days trip info twice a day
+    schedule.every().day.at("00:30").do(update_daytrip_infos, vm)
+    schedule.every().day.at("12:30").do(update_daytrip_infos, vm)
 
     while True:
         start = time.time()
+
+        try:
+            vm.check_and_refresh_token()
+            vm.check_and_force_update_vehicles(force_refresh_interval=60)
+        except Exception:
+            logger.exception("Failed to update vehicle states")
+
         for vehicle_id, vehicle in vm.vehicles.items():
             pprint.pprint(vehicle)
             print(vehicle.id, vehicle.name)
@@ -166,13 +219,9 @@ def main():
                 logger.exception("Failed to store vehicle state")
                 database.db_session.rollback()
 
-        time.sleep(int(start + 900 - time.time()))
+        schedule.run_pending()
 
-        try:
-            vm.check_and_refresh_token()
-            vm.check_and_force_update_vehicles(force_refresh_interval=60)
-        except Exception:
-            logger.exception("Failed to update vehicle states")
+        time.sleep(int(start + 900 - time.time()))
 
 
 if __name__ == '__main__':
