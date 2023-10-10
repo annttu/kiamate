@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine, Column, Integer, DateTime, \
-     ForeignKey, Float, UniqueConstraint
+     ForeignKey, Float, UniqueConstraint, Boolean
 from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 from sqlalchemy.dialects import postgresql
-
+from sqlalchemy.dialects.postgresql import JSONB
 
 import credentials
 
@@ -50,6 +50,49 @@ class EVBattery(Model):
     car_id = Column('car_id', Integer, ForeignKey('car.id'), nullable=False)
     battery_charging = Column('battery_charging', Integer, nullable=False)
     battery_percent = Column('battery_percent', Integer, nullable=False)
+    time = Column('time', DateTime(timezone=True), nullable=False)
+
+    UniqueConstraint(car_id, time)
+
+
+class Status(Model):
+    __tablename__ = 'status'
+
+    id = Column('id', postgresql.BIGINT, primary_key=True, nullable=False, unique=True)
+    car_id = Column('car_id', Integer, ForeignKey('car.id'), nullable=False)
+    odometer = Column('odo', Float, nullable=True)
+    car_battery_percentage = Column('car_battery_percentage', Integer, nullable=True)  # 12V battery
+    engine_is_running = Column('engine_is_running', Boolean, nullable=True)
+    ev_charge_port_door_is_open = Column('ev_charge_port_door_is_open', Boolean, nullable=True)
+    smart_key_battery_warning_is_on = Column('smart_key_battery_warning_is_on', Boolean, nullable=True)
+    washer_fluid_warning_is_on = Column('washer_fluid_warning_is_on', Boolean, nullable=True)
+    brake_fluid_warning_is_on = Column('brake_fluid_warning_is_on', Boolean, nullable=True)
+    air_control_is_on = Column('air_control_is_on', Boolean, nullable=True)
+    defrost_is_on = Column('defrost_is_on', Boolean, nullable=True)
+    steering_wheel_heater_is_on = Column('steering_wheel_heater_is_on', Boolean, nullable=True)
+    back_window_heater_is_on = Column('back_window_heater_is_on', Boolean, nullable=True)
+    side_mirror_heater_is_on = Column('side_mirror_heater_is_on', Boolean, nullable=True)
+    front_left_seat_status = Column('front_left_seat_status', Boolean, nullable=True)
+    front_right_seat_status = Column('front_right_seat_status', Boolean, nullable=True)
+    rear_left_seat_status = Column('rear_left_seat_status', Boolean, nullable=True)
+    rear_right_seat_status = Column('rear_right_seat_status', Boolean, nullable=True)
+    is_locked = Column('is_locked', Boolean, nullable=True)
+    front_left_door_is_open = Column('front_left_door_is_open', Boolean, nullable=True)
+    front_right_door_is_open = Column('front_right_door_is_open', Boolean, nullable=True)
+    back_left_door_is_open = Column('back_left_door_is_open', Boolean, nullable=True)
+    back_right_door_is_open = Column('back_right_door_is_open', Boolean, nullable=True)
+    trunk_is_open = Column('trunk_is_open', Boolean, nullable=True)
+    hood_is_open = Column('hood_is_open', Boolean, nullable=True)
+    front_left_window_is_open = Column('front_left_window_is_open', Boolean, nullable=True)
+    front_right_window_is_open = Column('front_right_window_is_open', Boolean, nullable=True)
+    back_left_window_is_open = Column('back_left_window_is_open', Boolean, nullable=True)
+    back_right_window_is_open = Column('back_right_window_is_open', Boolean, nullable=True)
+    tire_pressure_all_warning_is_on = Column('tire_pressure_all_warning_is_on', Boolean, nullable=True)
+    tire_pressure_rear_left_warning_is_on = Column('tire_pressure_rear_left_warning_is_on', Boolean, nullable=True)
+    tire_pressure_front_left_warning_is_on = Column('tire_pressure_front_left_warning_is_on', Boolean, nullable=True)
+    tire_pressure_front_right_warning_is_on = Column('tire_pressure_front_right_warning_is_on', Boolean, nullable=True)
+    tire_pressure_rear_right_warning_is_on = Column('tire_pressure_rear_right_warning_is_on', Boolean, nullable=True)
+    data = Column('data', JSONB, nullable=False)
     time = Column('time', DateTime(timezone=True), nullable=False)
 
     UniqueConstraint(car_id, time)

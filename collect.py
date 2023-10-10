@@ -91,6 +91,54 @@ def update_ev_range(car_id, vehicle):
     database.db_session.commit()
 
 
+def update_status(car_id, vehicle):
+    q = database.Status.query.filter(
+        database.Status.car_id == car_id,
+        database.Status.time == vehicle.last_updated_at)
+    db_obj = q.first()
+    if db_obj:
+        return
+    db_obj = database.Status(
+        car_id=car_id,
+        odometer=vehicle.odometer,
+        car_battery_percentage=vehicle.car_battery_percentage,
+        engine_is_running=vehicle.engine_is_running,
+        ev_charge_port_door_is_open=vehicle.ev_charge_port_door_is_open,
+        smart_key_battery_warning_is_on=vehicle.smart_key_battery_warning_is_on,
+        washer_fluid_warning_is_on=vehicle.washer_fluid_warning_is_on,
+        brake_fluid_warning_is_on=vehicle.brake_fluid_warning_is_on,
+        air_control_is_on=vehicle.air_control_is_on,
+        defrost_is_on=vehicle.defrost_is_on,
+        steering_wheel_heater_is_on=vehicle.steering_wheel_heater_is_on,
+        back_window_heater_is_on=vehicle.back_window_heater_is_on,
+        side_mirror_heater_is_on=vehicle.side_mirror_heater_is_on,
+        front_left_seat_status=vehicle.front_left_seat_status,
+        front_right_seat_status=vehicle.front_right_seat_status,
+        rear_left_seat_status=vehicle.rear_left_seat_status,
+        rear_right_seat_status=vehicle.rear_right_seat_status,
+        is_locked=vehicle.is_locked,
+        front_left_door_is_open=vehicle.front_left_door_is_open,
+        front_right_door_is_open=vehicle.front_right_door_is_open,
+        back_left_door_is_open=vehicle.back_left_door_is_open,
+        back_right_door_is_open=vehicle.back_right_door_is_open,
+        trunk_is_open=vehicle.trunk_is_open,
+        hood_is_open=vehicle.hood_is_open,
+        front_left_window_is_open=vehicle.front_left_window_is_open,
+        front_right_window_is_open=vehicle.front_right_window_is_open,
+        back_left_window_is_open=vehicle.back_left_window_is_open,
+        back_right_window_is_open=vehicle.back_right_window_is_open,
+        tire_pressure_all_warning_is_on=vehicle.tire_pressure_all_warning_is_on,
+        tire_pressure_rear_left_warning_is_on=vehicle.tire_pressure_rear_left_warning_is_on,
+        tire_pressure_front_left_warning_is_on=vehicle.tire_pressure_front_left_warning_is_on,
+        tire_pressure_front_right_warning_is_on=vehicle.tire_pressure_front_right_warning_is_on,
+        tire_pressure_rear_right_warning_is_on=vehicle.tire_pressure_rear_right_warning_is_on,
+        time=vehicle.last_updated_at,
+        data=vehicle.data,
+    )
+    database.db_session.add(db_obj)
+    database.db_session.commit()
+
+
 def update_daily_stats(car_id, vehicle):
     for stat in vehicle.daily_stats:
         update_daily_stat(car_id=car_id, stat=stat)
@@ -201,22 +249,27 @@ def main():
             try:
                 update_location(car_id=car_id, vehicle=vehicle)
             except Exception:
-                logger.exception("Failed to store vehicle state")
+                logger.exception("Failed to store vehicle location")
                 database.db_session.rollback()
             try:
                 update_ev_battery(car_id=car_id, vehicle=vehicle)
             except Exception:
-                logger.exception("Failed to store vehicle state")
+                logger.exception("Failed to store vehicle ev battery status")
                 database.db_session.rollback()
             try:
                 update_ev_range(car_id=car_id, vehicle=vehicle)
             except Exception:
-                logger.exception("Failed to store vehicle state")
+                logger.exception("Failed to store vehicle ev range")
+                database.db_session.rollback()
+            try:
+                update_status(car_id=car_id, vehicle=vehicle)
+            except Exception:
+                logger.exception("Failed to store vehicle status")
                 database.db_session.rollback()
             try:
                 update_daily_stats(car_id=car_id, vehicle=vehicle)
             except Exception:
-                logger.exception("Failed to store vehicle state")
+                logger.exception("Failed to store vehicle daily stats")
                 database.db_session.rollback()
 
         schedule.run_pending()
