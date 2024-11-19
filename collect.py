@@ -233,7 +233,9 @@ def main():
 
         try:
             vm.check_and_refresh_token()
-            vm.check_and_force_update_vehicles(force_refresh_interval=60)
+            # Forcing update frequently might consume 12v battery.
+            # vm.check_and_force_update_vehicles(force_refresh_interval=60)
+            vm.update_all_vehicles_with_cached_state()
         except Exception:
             logger.exception("Failed to update vehicle states")
 
